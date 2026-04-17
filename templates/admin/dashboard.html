@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}관리자 대시보드{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="admin-layout">
+    {% include 'admin/_sidebar.html' %}
+
+    <div class="admin-main">
+      <div class="page-header">
+        <h1 class="page-header-title">관리자 대시보드</h1>
+        <p class="page-header-sub">도서관 현황을 한눈에 확인합니다.</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-4 mb-07">
+        <div class="stat-card">
+          <div class="stat-card-value">{{ stats.total_books }}</div>
+          <div class="stat-card-label">전체 도서</div>
+        </div>
+        <div class="stat-card stat-card--success">
+          <div class="stat-card-value">{{ stats.available_books }}</div>
+          <div class="stat-card-label">대출 가능</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value">{{ stats.total_members }}</div>
+          <div class="stat-card-label">등록 회원</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value">{{ stats.active_loans }}</div>
+          <div class="stat-card-label">대출 중</div>
+        </div>
+      </div>
+
+      <div class="grid grid-2 mb-07">
+        <div class="stat-card stat-card--danger">
+          <div class="stat-card-value">{{ stats.overdue_loans }}</div>
+          <div class="stat-card-label">연체 도서</div>
+        </div>
+        <div class="stat-card stat-card--warning">
+          <div class="stat-card-value">{{ '{:,}'.format(stats.total_fines) }}원</div>
+          <div class="stat-card-label">총 연체료 징수액</div>
+        </div>
+      </div>
+
+      <!-- Overdue list -->
+      {% if overdue %}
+      <h2 class="heading-04 mb-05" style="color: var(--cds-support-error);">연체 도서 목록</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>도서명</th>
+            <th>대출자</th>
+            <th>대출일</th>
+            <th>반납기한</th>
+            <th>연체일</th>
+            <th>연체료</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in overdue %}
+          <tr class="row-overdue">
+            <td>{{ loan.title }}</td>
+            <td>{{ loan.member_name }}</td>
+            <td class="mono">{{ loan.borrowed_at|dateformat }}</td>
+            <td class="mono">{{ loan.due_at|dateformat }}</td>
+            <td class="mono">{{ loan.due_at|overdue_days }}일</td>
+            <td class="mono">{{ '{:,}'.format(loan.due_at|calc_fine) }}원</td>
+            <td>
+              <form method="POST" action="{{ url_for('admin_return', loan_id=loan.id) }}" style="margin:0;">
+                <button type="submit" class="btn btn-danger btn-sm">반납 처리</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state" style="padding: 32px;">
+        <p class="empty-state-text">연체 도서가 없습니다.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

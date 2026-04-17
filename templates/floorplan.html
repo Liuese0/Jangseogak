@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}도서관 안내{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-header-title">도서관 안내도</h1>
+    <p class="page-header-sub">구역을 클릭하면 해당 구역의 도서 목록을 볼 수 있습니다.</p>
+  </div>
+
+  <div class="floorplan-container">
+    <div class="floorplan-title">장서각 1층 배치도</div>
+
+    <div class="floorplan-entrance">&#9650; 입구 (Entrance)</div>
+
+    <div class="floorplan-grid">
+      {% for sec, name in sections.items() %}
+      <a href="{{ url_for('catalog', section=sec) }}"
+         class="floorplan-section sec-{{ sec }} {{ 'floorplan-section--highlighted' if highlight == sec }}"
+         style="text-decoration: none; color: inherit;">
+        <div class="floorplan-section-letter">{{ sec }}</div>
+        <div class="floorplan-section-name">{{ name }}</div>
+        <div class="floorplan-section-count">
+          {% if counts.get(sec) %}
+            {{ counts[sec].available }} / {{ counts[sec].total }} 대출 가능
+          {% else %}
+            0 도서
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+
+      <div class="floorplan-reading">
+        <div class="floorplan-reading-label">열람실</div>
+        <div class="floorplan-reading-sub">Reading Room</div>
+      </div>
+
+      <div class="floorplan-desk">
+        관리자 데스크 (Librarian Desk)
+      </div>
+    </div>
+  </div>
+
+  <!-- Section details -->
+  <div class="mt-09">
+    <h2 class="heading-03 mb-06">구역 안내</h2>
+    <div class="grid grid-3">
+      {% for sec, name in sections.items() %}
+      <a href="{{ url_for('catalog', section=sec) }}" class="card">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="width: 48px; height: 48px; background: {{ 'var(--cds-blue-10)' if highlight == sec else 'var(--cds-layer-02)' }}; display: flex; align-items: center; justify-content: center;">
+            <span class="mono heading-04">{{ sec }}</span>
+          </div>
+          <div>
+            <div class="card-title" style="font-size: 1rem;">{{ name }}</div>
+            <div class="card-subtitle">
+              {% if counts.get(sec) %}
+                전체 {{ counts[sec].total }}권 / 대출가능 {{ counts[sec].available }}권
+              {% else %}
+                도서 없음
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

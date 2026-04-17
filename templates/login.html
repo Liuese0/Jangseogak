@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}로그인{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 400px; margin-top: 96px;">
+  <div class="book-card">
+    <div class="book-card__header">
+      <div class="book-card__header-title">장 서 각</div>
+      <div class="book-card__header-sub">JANGSEOGAK LIBRARY SYSTEM</div>
+    </div>
+    <div class="book-card__body">
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+          <label class="form-label">아이디 (Username)</label>
+          <input type="text" name="username" class="form-input" placeholder="아이디를 입력하세요" required autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label">비밀번호 (Password)</label>
+          <input type="password" name="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-full" style="padding: 0 15px;">로그인 &rarr;</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <defs>
+    <path id="topArc" d="M 60 200 A 140 140 0 0 1 340 200" fill="none"/>
+    <path id="bottomArc" d="M 70 220 A 130 130 0 0 0 330 220" fill="none"/>
+  </defs>
+  <!-- Outer circle -->
+  <circle cx="200" cy="200" r="190" stroke="#1D4E9A" stroke-width="4" fill="#ffffff"/>
+  <!-- Inner circle -->
+  <circle cx="200" cy="200" r="135" stroke="#1D4E9A" stroke-width="2" fill="none"/>
+
+  <!-- Top arc text: KANGWON NATIONAL UNIVERSITY -->
+  <text fill="#1D4E9A" font-family="'IBM Plex Sans','Arial',sans-serif" font-size="22" font-weight="700" letter-spacing="3">
+    <textPath href="#topArc" startOffset="50%" text-anchor="middle">
+      KANGWON · NATIONAL · UNIVERSITY
+    </textPath>
+  </text>
+
+  <!-- Bottom arc text: 강원대학교 -->
+  <text fill="#1D4E9A" font-family="'Noto Sans KR','Malgun Gothic',sans-serif" font-size="28" font-weight="700" letter-spacing="12">
+    <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">
+      강 원 대 학 교
+    </textPath>
+  </text>
+
+  <!-- Orange diamond -->
+  <rect x="125" y="168" width="18" height="18" fill="#EF6C1F" transform="rotate(45 134 177)"/>
+
+  <!-- KNU text -->
+  <text x="200" y="240" text-anchor="middle" fill="#1D4E9A" font-family="'IBM Plex Sans','Arial Black',sans-serif" font-size="96" font-weight="900" letter-spacing="-2">KNU</text>
+</svg>

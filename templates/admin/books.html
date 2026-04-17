@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}도서 관리{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="admin-layout">
+    {% include 'admin/_sidebar.html' %}
+
+    <div class="admin-main">
+      <div class="page-header flex flex-between flex-center flex-wrap" style="gap: 16px;">
+        <div>
+          <h1 class="page-header-title">도서 관리</h1>
+          <p class="page-header-sub">도서를 추가, 수정, 삭제합니다.</p>
+        </div>
+        <a href="{{ url_for('admin_book_add') }}" class="btn btn-primary">도서 추가 &rarr;</a>
+      </div>
+
+      <!-- Search -->
+      <form method="GET" action="{{ url_for('admin_books') }}" class="search-bar">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M8.5 3a5.5 5.5 0 014.383 8.823l4.147 4.147a.75.75 0 01-1.06 1.06l-4.147-4.147A5.5 5.5 0 118.5 3zm0 1.5a4 4 0 100 8 4 4 0 000-8z"/>
+        </svg>
+        <input type="text" name="q" class="form-input" placeholder="도서명으로 검색..." value="{{ q }}">
+      </form>
+
+      {% if books %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>서명</th>
+            <th>저자</th>
+            <th>위치</th>
+            <th>상태</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for book in books %}
+          <tr>
+            <td class="mono">JSG-{{ '%04d' % book.id }}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 4px; height: 24px; background: {{ book.cover_color }};"></div>
+                <a href="{{ url_for('book_detail', book_id=book.id) }}">{{ book.title }}</a>
+              </div>
+            </td>
+            <td class="text-secondary">{{ book.author }}</td>
+            <td class="mono">{{ book.location_section }}-{{ book.location_shelf }}-{{ book.location_row }}</td>
+            <td>
+              {% if book.status == 'available' %}
+              <span class="tag tag-available">대출 가능</span>
+              {% elif book.status == 'in_use' %}
+              <span class="tag tag-in-use">이용 중</span>
+              {% else %}
+              <span class="tag tag-on-loan">대출 중</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="actions">
+                <a href="{{ url_for('admin_book_edit', book_id=book.id) }}" class="btn btn-ghost btn-sm">수정</a>
+                {% if book.status == 'available' %}
+                <form method="POST" action="{{ url_for('admin_book_delete', book_id=book.id) }}" style="margin:0;"
+                      onsubmit="return confirm('정말 삭제하시겠습니까?')">
+                  <button type="submit" class="btn btn-ghost btn-sm" style="color: var(--cds-support-error);">삭제</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <p class="empty-state-text">등록된 도서가 없습니다.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

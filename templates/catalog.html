@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}도서 목록{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-header-title">도서 목록</h1>
+    <p class="page-header-sub">장서각 소장 도서를 검색하고 대출할 수 있습니다.</p>
+  </div>
+
+  <!-- Search -->
+  <form method="GET" action="{{ url_for('catalog') }}" class="search-bar">
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M8.5 3a5.5 5.5 0 014.383 8.823l4.147 4.147a.75.75 0 01-1.06 1.06l-4.147-4.147A5.5 5.5 0 118.5 3zm0 1.5a4 4 0 100 8 4 4 0 000-8z"/>
+    </svg>
+    <input type="text" name="q" class="form-input" placeholder="도서명 또는 저자를 검색하세요..." value="{{ q }}">
+    <input type="hidden" name="section" value="{{ section }}">
+    <div class="search-controls">
+      <label class="search-radio">
+        <input type="radio" name="by" value="title" {{ 'checked' if by != 'author' }}>
+        제목
+      </label>
+      <label class="search-radio">
+        <input type="radio" name="by" value="author" {{ 'checked' if by == 'author' }}>
+        저자
+      </label>
+      {% if section %}
+      <span class="tag tag-on-loan">{{ sections.get(section, section) }} 구역</span>
+      <a href="{{ url_for('catalog') }}" class="body-short-01" style="margin-left: 8px;">전체 보기</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Book Grid -->
+  {% if books %}
+  <div class="grid grid-3">
+    {% for book in books %}
+    <a href="{{ url_for('book_detail', book_id=book.id) }}" class="card">
+      <div class="card-cover-accent" style="background: {{ book.cover_color }};"></div>
+      <div class="card-title">{{ book.title }}</div>
+      <div class="card-subtitle">{{ book.author }}</div>
+      <div class="card-meta">
+        {{ book.location_section }}구역 &middot; {{ book.location_shelf }}서가 &middot; {{ book.location_row }}열
+      </div>
+      <div class="card-footer">
+        {% if book.status == 'available' %}
+        <span class="tag tag-available">대출 가능</span>
+        {% elif book.status == 'in_use' %}
+        <span class="tag tag-in-use">이용 중</span>
+        {% else %}
+        <span class="tag tag-on-loan">대출 중</span>
+        {% endif %}
+        <span class="caption-01 text-secondary">{{ book.isbn or '' }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">&#128218;</div>
+    <p class="empty-state-text">
+      {% if q %}검색 결과가 없습니다.{% else %}등록된 도서가 없습니다.{% endif %}
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

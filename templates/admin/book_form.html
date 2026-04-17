@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}{{ '도서 수정' if book else '도서 추가' }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="admin-layout">
+    {% include 'admin/_sidebar.html' %}
+
+    <div class="admin-main">
+      <div class="page-header">
+        <h1 class="page-header-title">{{ '도서 수정' if book else '새 도서 추가' }}</h1>
+        <p class="page-header-sub">
+          {% if book %}도서 정보를 수정합니다.{% else %}새 도서를 장서각에 등록합니다.{% endif %}
+        </p>
+      </div>
+
+      <form method="POST" style="max-width: 640px;">
+        <div class="form-group">
+          <label class="form-label">서명 (Title) *</label>
+          <input type="text" name="title" class="form-input" required
+                 value="{{ book.title if book else '' }}" placeholder="도서 제목">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">저자 (Author) *</label>
+          <input type="text" name="author" class="form-input" required
+                 value="{{ book.author if book else '' }}" placeholder="저자명">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">ISBN</label>
+            <input type="text" name="isbn" class="form-input"
+                   value="{{ book.isbn if book else '' }}" placeholder="978-XX-XXX-XXXX-X">
+          </div>
+          <div class="form-group">
+            <label class="form-label">출판사</label>
+            <input type="text" name="publisher" class="form-input"
+                   value="{{ book.publisher if book else '' }}" placeholder="출판사명">
+          </div>
+          <div class="form-group">
+            <label class="form-label">출판년도</label>
+            <input type="number" name="year" class="form-input"
+                   value="{{ book.year if book and book.year else '' }}" placeholder="2024" min="1900" max="2100">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">구역 (Section) *</label>
+            <select name="location_section" class="form-select" required>
+              {% for sec, name in sections.items() %}
+              <option value="{{ sec }}" {{ 'selected' if book and book.location_section == sec }}>
+                {{ sec }} — {{ name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">서가 (Shelf) *</label>
+            <input type="number" name="location_shelf" class="form-input" required
+                   value="{{ book.location_shelf if book else 1 }}" min="1" max="99">
+          </div>
+          <div class="form-group">
+            <label class="form-label">열 (Row) *</label>
+            <input type="number" name="location_row" class="form-input" required
+                   value="{{ book.location_row if book else 1 }}" min="1" max="99">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">카드 색상</label>
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <input type="color" name="cover_color"
+                   value="{{ book.cover_color if book else '#c6c6c6' }}">
+            <span class="caption-01 text-secondary">도서 카드 상단 악센트 색상</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; margin-top: 32px;">
+          <button type="submit" class="btn btn-primary">
+            {{ '수정 완료' if book else '도서 등록' }} &rarr;
+          </button>
+          <a href="{{ url_for('admin_books') }}" class="btn btn-ghost">취소</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

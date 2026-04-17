@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}QR 처리 결과{% endblock %}
+
+{% block content %}
+<div class="qr-confirm">
+  {% if success %}
+    {% if action == 'reading' %}
+    <div class="qr-confirm-icon">&#128214;</div>
+    {% else %}
+    <div class="qr-confirm-icon">&#9989;</div>
+    {% endif %}
+  {% else %}
+    <div class="qr-confirm-icon">&#10060;</div>
+  {% endif %}
+
+  <div class="qr-confirm-message">{{ message }}</div>
+
+  {% if success and book %}
+  <div class="qr-confirm-detail">
+    {{ book.title }} &mdash; {{ book.author }}
+  </div>
+  {% endif %}
+
+  {% if success and action == 'return' and fine and fine > 0 %}
+  <div class="fine-amount">
+    연체료: {{ '{:,}'.format(fine) }}원
+  </div>
+  <p class="body-short-01 text-secondary mt-03">
+    일 {{ '{:,}'.format(fine_per_day) }}원 기준
+  </p>
+  {% endif %}
+
+  <div class="mt-07">
+    <a href="{{ url_for('index') }}" class="btn btn-tertiary btn-sm">홈으로 돌아가기</a>
+  </div>
+</div>
+{% endblock %}

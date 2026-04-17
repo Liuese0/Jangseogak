@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}대출 현황{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="admin-layout">
+    {% include 'admin/_sidebar.html' %}
+
+    <div class="admin-main">
+      <div class="page-header">
+        <h1 class="page-header-title">전체 대출 현황</h1>
+        <p class="page-header-sub">모든 대출 기록을 확인하고 관리합니다.</p>
+      </div>
+
+      {% if loans %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>도서명</th>
+            <th>대출자</th>
+            <th>종류</th>
+            <th>대출일</th>
+            <th>반납기한</th>
+            <th>반납일</th>
+            <th>상태</th>
+            <th>연체료</th>
+            <th style="min-width: 220px;">관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in loans %}
+          <tr class="{{ 'row-overdue' if loan.status != 'returned' and loan.due_at|is_overdue }}">
+            <td>
+              <a href="{{ url_for('book_detail', book_id=loan.book_id) }}">{{ loan.title }}</a>
+              <div class="caption-01 text-secondary">{{ loan.author }}</div>
+            </td>
+            <td>{{ loan.member_name }}</td>
+            <td>
+              {% if loan.status == 'returned' %}
+                <span class="caption-01 text-secondary">-</span>
+              {% elif loan.status == 'in_use' %}
+                <span class="tag tag-in-use">관내</span>
+              {% else %}
+                <span class="tag tag-on-loan">외부</span>
+              {% endif %}
+            </td>
+            <td class="mono">{{ loan.borrowed_at|dateformat }}</td>
+            <td class="mono">{{ loan.due_at|dateformat }}</td>
+            <td class="mono">
+              {% if loan.returned_at %}
+                {{ loan.returned_at|dateformat }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              {% if loan.status == 'returned' %}
+                <span class="tag tag-returned">반납</span>
+              {% elif loan.due_at|is_overdue %}
+                <span class="tag tag-overdue">연체</span>
+              {% elif loan.status == 'in_use' %}
+                <span class="tag tag-in-use">이용 중</span>
+              {% else %}
+                <span class="tag tag-on-loan">대출 중</span>
+              {% endif %}
+            </td>
+            <td class="mono">
+              {% if loan.fine_amount > 0 %}
+                {{ '{:,}'.format(loan.fine_amount) }}원
+              {% elif loan.status != 'returned' and loan.due_at|is_overdue %}
+                {{ '{:,}'.format(loan.due_at|calc_fine) }}원
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              {% if loan.status != 'returned' %}
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                <form method="POST" action="{{ url_for('admin_loan_adjust', loan_id=loan.id) }}"
+                      style="margin:0; display: flex; gap: 4px; align-items: center;">
+                  <input type="date" name="due_date" class="form-input" style="height: 32px; width: 140px;"
+                         value="{{ loan.due_at[:10] }}" required>
+                  <button type="submit" class="btn btn-tertiary btn-sm" title="반납 기한 수정">기한수정</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin_return', loan_id=loan.id) }}" style="margin:0;">
+                  <button type="submit" class="btn btn-danger btn-sm">반납</button>
+                </form>
+              </div>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <p class="empty-state-text">대출 기록이 없습니다.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

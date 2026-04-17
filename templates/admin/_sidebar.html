@@ -1,0 +1,7 @@
+<nav class="admin-sidebar">
+  <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint == 'admin_dashboard' }}">대시보드</a>
+  <a href="{{ url_for('admin_books') }}" class="{{ 'active' if request.endpoint in ('admin_books', 'admin_book_add', 'admin_book_edit') }}">도서 관리</a>
+  <a href="{{ url_for('admin_members') }}" class="{{ 'active' if request.endpoint in ('admin_members', 'admin_member_add', 'admin_member_edit') }}">회원 관리</a>
+  <a href="{{ url_for('admin_loans') }}" class="{{ 'active' if request.endpoint == 'admin_loans' }}">대출 현황</a>
+  <a href="{{ url_for('admin_overdue') }}" class="{{ 'active' if request.endpoint == 'admin_overdue' }}">연체 관리</a>
+</nav>

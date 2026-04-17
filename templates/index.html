@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}홈{% endblock %}
+
+{% block content %}
+<section class="hero hero-3d">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <img src="{{ url_for('static', filename='img/knu-logo.svg') }}" alt="강원대학교" class="hero-badge-logo">
+          <div class="hero-badge-text">
+            <span class="hero-badge-eng">KANGWON NATIONAL UNIVERSITY</span>
+            <span class="hero-badge-kor">강원대학교 · 도서관 관리 시스템</span>
+          </div>
+        </div>
+        <h1 class="hero-title">장서각</h1>
+        <p class="hero-subtitle">
+          도서의 등록, 대출, 반납, 연체 관리를 처리하는 도서관 관리 시스템입니다.
+          QR 코드를 통한 스마트 대출 시스템으로 편리하게 이용하세요.
+        </p>
+        {% if session.get('member_id') %}
+        <a href="{{ url_for('catalog') }}" class="btn btn-primary">도서 목록 보기 &rarr;</a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary">로그인 &rarr;</a>
+        {% endif %}
+        {% if featured_books %}
+        <p class="caption-01 text-secondary mt-06">
+          ↻ 3D 책장을 드래그하거나 책을 클릭해 상세 정보를 확인하세요
+        </p>
+        {% endif %}
+      </div>
+
+      {% if featured_books %}
+      <div class="hero-3d-container" id="bookshelf3dContainer">
+        <canvas id="bookshelf3d" class="hero-3d-canvas"></canvas>
+        <div id="bookTooltip" class="book-tooltip"></div>
+        <div id="bookshelfStatus" class="hero-3d-status">3D 책장과 모델을 불러오는 중…</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section-white" style="padding: 48px 0;">
+  <div class="container">
+    <h2 class="heading-03 mb-07">도서관 현황</h2>
+    <div class="grid grid-4">
+      <div class="stat-card">
+        <div class="stat-card-value">{{ stats.total_books }}</div>
+        <div class="stat-card-label">전체 도서</div>
+      </div>
+      <div class="stat-card stat-card--success">
+        <div class="stat-card-value">{{ stats.available_books }}</div>
+        <div class="stat-card-label">대출 가능</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value">{{ stats.active_loans }}</div>
+        <div class="stat-card-label">대출 중</div>
+      </div>
+      <div class="stat-card stat-card--danger">
+        <div class="stat-card-value">{{ stats.overdue_loans }}</div>
+        <div class="stat-card-label">연체</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-gray" style="padding: 48px 0;">
+  <div class="container">
+    <h2 class="heading-03 mb-07">이용 안내</h2>
+    <div class="grid grid-3">
+      <div class="card" style="cursor: default;">
+        <div class="card-title">도서 대출</div>
+        <p class="card-subtitle mt-03">도서 목록에서 원하는 책을 선택하고 대출 버튼을 클릭하세요. QR 코드가 발급됩니다.</p>
+      </div>
+      <div class="card" style="cursor: default;">
+        <div class="card-title">도서관내 이용</div>
+        <p class="card-subtitle mt-03">도서관 내에서만 책을 볼 경우 "도서관내 이용" 버튼을 사용하세요. 당일 반납입니다.</p>
+      </div>
+      <div class="card" style="cursor: default;">
+        <div class="card-title">QR 반납</div>
+        <p class="card-subtitle mt-03">반납 QR 코드를 스캔하면 자동으로 반납 처리됩니다. 연체 시 연체료가 부과됩니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if featured_books %}
+<script>
+  window.BOOKSHELF_DATA = {{ featured_books|tojson }};
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+  const statusEl = document.getElementById('bookshelfStatus');
+  window.addEventListener('error', (e) => {
+    if (statusEl) statusEl.textContent = '3D 로드 실패: ' + (e.message || e.filename);
+    console.error('[bookshelf3d]', e);
+  });
+  try {
+    await import("{{ url_for('static', filename='js/bookshelf3d.js') }}");
+    if (statusEl) statusEl.style.display = 'none';
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '3D 책장 모듈 로드 실패: ' + err.message;
+    console.error('[bookshelf3d import]', err);
+  }
+</script>
+{% endif %}
+{% endblock %}

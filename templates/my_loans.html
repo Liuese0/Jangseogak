@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}내 대출{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-header-title">내 대출 현황</h1>
+    <p class="page-header-sub">현재 대출 중인 도서와 대출 이력을 확인할 수 있습니다.</p>
+  </div>
+
+  {% if loans %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>도서명</th>
+        <th>저자</th>
+        <th>대출일</th>
+        <th>반납기한</th>
+        <th>반납일</th>
+        <th>상태</th>
+        <th>연체료</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for loan in loans %}
+      <tr class="{{ 'row-overdue' if loan.status != 'returned' and loan.due_at|is_overdue }}">
+        <td>
+          <a href="{{ url_for('book_detail', book_id=loan.book_id) }}">{{ loan.title }}</a>
+        </td>
+        <td class="text-secondary">{{ loan.author }}</td>
+        <td class="mono">{{ loan.borrowed_at|dateformat }}</td>
+        <td class="mono">{{ loan.due_at|dateformat }}</td>
+        <td class="mono">
+          {% if loan.returned_at %}
+            {{ loan.returned_at|dateformat }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if loan.status == 'returned' %}
+            <span class="tag tag-returned">반납 완료</span>
+          {% elif loan.due_at|is_overdue %}
+            <span class="tag tag-overdue">연체</span>
+          {% elif loan.status == 'in_use' %}
+            <span class="tag tag-in-use">도서관내 이용</span>
+          {% else %}
+            <span class="tag tag-on-loan">외부 대출</span>
+          {% endif %}
+        </td>
+        <td class="mono">
+          {% if loan.fine_amount > 0 %}
+            {{ '{:,}'.format(loan.fine_amount) }}원
+          {% elif loan.status != 'returned' and loan.due_at|is_overdue %}
+            {{ '{:,}'.format(loan.due_at|calc_fine) }}원
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if loan.status != 'returned' %}
+          <a href="{{ url_for('book_detail', book_id=loan.book_id) }}" class="btn btn-ghost btn-sm">
+            QR 보기
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">&#128214;</div>
+    <p class="empty-state-text">대출 이력이 없습니다.</p>
+    <a href="{{ url_for('catalog') }}" class="btn btn-primary mt-07">도서 목록 보기 &rarr;</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+<div class="flash-container" id="flashContainer">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="flash-msg {{ category }}">
+      <span>{{ message }}</span>
+      <button class="flash-close" onclick="this.parentElement.classList.add('fade-out'); setTimeout(() => this.parentElement.remove(), 300);">&times;</button>
+    </div>
+    {% endfor %}
+  {% endwith %}
+</div>

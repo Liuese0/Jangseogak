@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}장서각{% endblock %} — 도서관 관리 시스템</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% include 'partials/nav.html' %}
+  {% include 'partials/flash.html' %}
+
+  <div class="page-content page-transition">
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span class="footer-text">장서각 (Jangseogak) Library Management System</span>
+      <span class="footer-text">{{ now.strftime('%Y') }}</span>
+    </div>
+  </footer>
+
+  <!-- QR Modal -->
+  <div class="qr-modal-overlay" id="qrModal">
+    <div class="qr-modal-content">
+      <img src="" alt="QR Code" id="qrModalImg">
+      <p id="qrModalText"></p>
+      <button class="btn btn-secondary btn-sm mt-05" onclick="closeQrModal()">닫기</button>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

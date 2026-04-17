@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header flex flex-between flex-center flex-wrap" style="gap: 16px;">
+    <div>
+      <h1 class="page-header-title">{{ book.title }}</h1>
+      <p class="page-header-sub">{{ book.author }}</p>
+    </div>
+    <a href="{{ url_for('catalog') }}" class="btn btn-ghost">&larr; 도서 목록</a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+    <!-- Book Card (북카드) -->
+    <div>
+      <div class="book-card">
+        <div class="book-card__header">
+          <div class="book-card__header-title">장 서 각&nbsp;&nbsp;도 서 카 드</div>
+          <div class="book-card__header-sub">JANGSEOGAK LIBRARY BOOK CARD</div>
+        </div>
+        <div class="book-card__body">
+          <div class="book-card__field">
+            <div class="book-card__label">서명 (Title)</div>
+            <div class="book-card__value">{{ book.title }}</div>
+          </div>
+          <div class="book-card__field">
+            <div class="book-card__label">저자 (Author)</div>
+            <div class="book-card__value">{{ book.author }}</div>
+          </div>
+          <div class="book-card__fields-row">
+            <div class="book-card__field">
+              <div class="book-card__label">출판사</div>
+              <div class="book-card__value">{{ book.publisher or '-' }}</div>
+            </div>
+            <div class="book-card__field">
+              <div class="book-card__label">출판년도</div>
+              <div class="book-card__value">{{ book.year or '-' }}</div>
+            </div>
+            <div class="book-card__field">
+              <div class="book-card__label">ISBN</div>
+              <div class="book-card__value">{{ book.isbn or '-' }}</div>
+            </div>
+          </div>
+          <div class="book-card__fields-row">
+            <div class="book-card__field">
+              <div class="book-card__label">구역 (Section)</div>
+              <div class="book-card__value">{{ book.location_section }}</div>
+            </div>
+            <div class="book-card__field">
+              <div class="book-card__label">서가 (Shelf)</div>
+              <div class="book-card__value">{{ book.location_shelf }}</div>
+            </div>
+            <div class="book-card__field">
+              <div class="book-card__label">열 (Row)</div>
+              <div class="book-card__value">{{ book.location_row }}</div>
+            </div>
+          </div>
+          <div class="book-card__field">
+            <div class="book-card__label">등록번호 (ID)</div>
+            <div class="book-card__value">JSG-{{ '%04d' % book.id }}</div>
+          </div>
+          <div class="book-card__field">
+            <div class="book-card__label">상태 (Status)</div>
+            <div>
+              {% if active_loan and active_loan.due_at|is_overdue %}
+              <span class="tag tag-overdue">연체</span>
+              {% elif book.status == 'available' %}
+              <span class="tag tag-available">대출 가능</span>
+              {% elif book.status == 'in_use' %}
+              <span class="tag tag-in-use">이용 중</span>
+              {% else %}
+              <span class="tag tag-on-loan">대출 중</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Loan history -->
+          <div class="book-card__divider"></div>
+          <div class="book-card__history-title">대출 기록 (Loan History)</div>
+          {% if loan_history %}
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>날짜</th>
+                <th>대출자</th>
+                <th>반납일</th>
+                <th>연체료</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for loan in loan_history[:10] %}
+              <tr class="{{ 'row-overdue' if loan.status != 'returned' and loan.due_at|is_overdue }}">
+                <td class="mono">{{ loan.borrowed_at|dateformat }}</td>
+                <td>{{ loan.member_name }}</td>
+                <td class="mono">
+                  {% if loan.returned_at %}
+                    {{ loan.returned_at|dateformat }}
+                  {% else %}
+                    <span class="tag tag-on-loan" style="font-size: 0.625rem;">대출 중</span>
+                  {% endif %}
+                </td>
+                <td class="mono">
+                  {% if loan.fine_amount > 0 %}
+                    {{ '{:,}'.format(loan.fine_amount) }}원
+                  {% elif loan.status != 'returned' and loan.due_at|is_overdue %}
+                    {{ '{:,}'.format(loan.due_at|calc_fine) }}원
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="body-short-01 text-secondary" style="padding: 16px 0;">대출 기록이 없습니다.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Borrow buttons -->
+      {% if book.status == 'available' %}
+      <div style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <form method="POST" action="{{ url_for('borrow', book_id=book.id) }}" style="margin:0;">
+          <input type="hidden" name="loan_type" value="external">
+          <button type="submit" class="btn btn-primary w-full" style="padding: 0 15px;"
+                  {{ 'disabled style="background: var(--cds-text-disabled); cursor: not-allowed;"' if has_overdue }}>
+            대출하기 (외부) &rarr;
+          </button>
+        </form>
+        <form method="POST" action="{{ url_for('borrow', book_id=book.id) }}" style="margin:0;">
+          <input type="hidden" name="loan_type" value="internal">
+          <button type="submit" class="btn btn-secondary w-full" style="padding: 0 15px;">
+            도서관내 이용 &rarr;
+          </button>
+        </form>
+      </div>
+      {% if has_overdue %}
+      <p class="body-short-01" style="color: var(--cds-support-error); margin-top: 12px;">
+        ⚠ 연체 중인 도서가 있어 외부 대출이 불가합니다. 도서관내 이용만 가능합니다.
+      </p>
+      {% else %}
+      <p class="caption-01 text-secondary mt-03">
+        · <strong>대출하기</strong>: 도서를 외부로 가져갑니다 (14일)<br>
+        · <strong>도서관내 이용</strong>: 도서관 내에서만 읽습니다 (당일)
+      </p>
+      {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- Right column: Location + QR -->
+    <div>
+      <!-- Mini floor plan -->
+      <div style="margin-bottom: 32px;">
+        <h3 class="heading-04 mb-05">도서 위치</h3>
+        <p class="body-short-01 text-secondary mb-05">
+          <strong>{{ sections.get(book.location_section, '') }}</strong> &mdash;
+          {{ book.location_section }}구역 {{ book.location_shelf }}번 서가, {{ book.location_row }}열
+        </p>
+        <a href="{{ url_for('floorplan', highlight=book.location_section) }}" class="btn btn-tertiary btn-sm">
+          도서관 안내도에서 보기 &rarr;
+        </a>
+
+        <!-- Mini map -->
+        <div class="mini-floorplan mt-05">
+          {% for sec in ['A', 'B', 'C', 'D', 'E', 'F'] %}
+          <div class="mini-floorplan-cell {{ 'mini-floorplan-cell--active' if sec == book.location_section }}">
+            {{ sec }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- QR Codes -->
+      {% if active_loan and is_my_loan %}
+      <div>
+        <h3 class="heading-04 mb-05">
+          {% if active_loan.status == 'in_use' %}도서관내 이용 중{% else %}대출 중{% endif %}
+        </h3>
+        <p class="body-short-01 text-secondary mb-05">
+          반납 QR 코드를 스캔하면 반납 처리됩니다.
+        </p>
+        <div class="qr-section">
+          <div class="qr-item">
+            <img src="{{ url_for('static', filename=qr_return) }}" alt="반납 QR"
+                 onclick="openQrModal(this.src, '반납 QR — 스캔하면 도서가 반납 처리됩니다')">
+            <div class="qr-item-label">
+              {% if active_loan.status == 'in_use' %}이용 종료 QR{% else %}반납 QR{% endif %}
+            </div>
+            <div class="qr-item-desc">스캔 시 반납 처리</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: var(--cds-layer-01); border-bottom: 2px solid var(--cds-border-subtle);">
+          <div class="caption-01 text-secondary">
+            {% if active_loan.status == 'in_use' %}이용 정보{% else %}대출 정보{% endif %}
+          </div>
+          <div class="mono body-short-01 mt-03">
+            종류:
+            {% if active_loan.status == 'in_use' %}
+              <span class="tag tag-in-use">도서관내 이용</span>
+            {% else %}
+              <span class="tag tag-on-loan">외부 대출</span>
+            {% endif %}<br>
+            {% if active_loan.status == 'in_use' %}시작일{% else %}대출일{% endif %}: {{ active_loan.borrowed_at|dateformat('%Y-%m-%d %H:%M') }}<br>
+            반납 기한: {{ active_loan.due_at|dateformat('%Y-%m-%d %H:%M') }}<br>
+            상태:
+            {% if active_loan.due_at|is_overdue %}
+              <span class="tag tag-overdue">연체 ({{ '{:,}'.format(active_loan.due_at|calc_fine) }}원)</span>
+            {% elif active_loan.status == 'in_use' %}
+              <span class="tag tag-in-use">이용 중</span>
+            {% else %}
+              <span class="tag tag-on-loan">대출 중</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% elif active_loan and not is_my_loan %}
+      <div>
+        <h3 class="heading-04 mb-05">대출 정보</h3>
+        <div style="padding: 16px; background: var(--cds-layer-01); border-bottom: 2px solid var(--cds-border-subtle);">
+          <div class="mono body-short-01">
+            현재 다른 이용자가 대출 중입니다.<br>
+            반납 기한: {{ active_loan.due_at|dateformat }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  @media (max-width: 672px) {
+    div[style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+{% endblock %}

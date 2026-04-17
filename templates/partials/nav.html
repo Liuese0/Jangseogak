@@ -1,0 +1,51 @@
+<nav class="nav-masthead">
+  <div class="nav-inner">
+    <a href="{{ url_for('index') }}" class="nav-logo">
+      <img src="{{ url_for('static', filename='img/knu-logo.svg') }}" alt="KNU" class="nav-logo-img">
+      <span class="nav-logo-text">장 서 각</span>
+    </a>
+
+    {% if session.get('member_id') %}
+    <div class="nav-links">
+      <a href="{{ url_for('catalog') }}" class="{{ 'active' if request.endpoint == 'catalog' }}">도서 목록</a>
+      <a href="{{ url_for('floorplan') }}" class="{{ 'active' if request.endpoint == 'floorplan' }}">도서관 안내</a>
+      <a href="{{ url_for('my_loans') }}" class="{{ 'active' if request.endpoint == 'my_loans' }}">내 대출</a>
+      {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin') }}">관리자</a>
+      {% endif %}
+    </div>
+    <div class="nav-user">
+      <span class="nav-user-name">{{ session.get('name', '') }}</span>
+      <a href="{{ url_for('logout') }}">로그아웃</a>
+    </div>
+    {% else %}
+    <div class="nav-links">
+      <a href="{{ url_for('login') }}" class="{{ 'active' if request.endpoint == 'login' }}">로그인</a>
+    </div>
+    {% endif %}
+
+    <!-- Mobile hamburger -->
+    <button class="nav-hamburger" id="navHamburger" aria-label="메뉴">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile panel -->
+<div class="nav-mobile-overlay" id="navOverlay"></div>
+<div class="nav-mobile-panel" id="navMobilePanel">
+  {% if session.get('member_id') %}
+  <div style="padding: 12px 16px; color: #ffffff; font-size: 0.875rem; border-bottom: 1px solid #393939;">
+    {{ session.get('name', '') }}
+  </div>
+  <a href="{{ url_for('catalog') }}" class="{{ 'active' if request.endpoint == 'catalog' }}">도서 목록</a>
+  <a href="{{ url_for('floorplan') }}" class="{{ 'active' if request.endpoint == 'floorplan' }}">도서관 안내</a>
+  <a href="{{ url_for('my_loans') }}" class="{{ 'active' if request.endpoint == 'my_loans' }}">내 대출</a>
+  {% if session.get('role') == 'admin' %}
+  <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin') }}">관리자</a>
+  {% endif %}
+  <a href="{{ url_for('logout') }}">로그아웃</a>
+  {% else %}
+  <a href="{{ url_for('login') }}">로그인</a>
+  {% endif %}
+</div>
